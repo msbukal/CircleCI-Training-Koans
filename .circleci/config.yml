@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   condition-workflow:
     type: boolean
-    default: true
+    default: false
 
 jobs:
   my-job:
@@ -32,7 +32,7 @@ workflows:
 
   conditional-workflow:
     when:
-      equal: [true, condition-workflow]
+      equal: [true, << pipeline.parameters.condition-workflow >> ]
         # Add condition to execute this workflow when condition-workflow is equal to true
     jobs:
       - conditional-job
