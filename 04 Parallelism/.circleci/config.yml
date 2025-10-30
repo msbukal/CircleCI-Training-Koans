@@ -18,5 +18,6 @@ jobs:
 
 workflows:
   test-workflow:
+    parallelism: 2
     jobs:
       - test
