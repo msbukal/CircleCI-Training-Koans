@@ -1,40 +1,46 @@
 version: 2.1
 
-orbs:
-  win: circleci/windows@4.1.1
-
-jobs:
-  build-docker:
+executors:
+  custom-node:
     docker:
       - image: cimg/node:18.11.0
-    steps:
-      - run: echo "docker executor"
-  build-linux:
-    machine:
-      image: ubuntu-2204:current
-    steps:
-      - run: echo "linux executor"
-  build-macos:
-    macos:
-      xcode: 14.2.0
-    steps:
-      - run: echo "macos executor"
-  build-windows:
-    executor: win/server-2022
-    steps:
-      - run: echo "windows executor"
 
+commands:
+  generatelogs:
+    description: "A command to generate a log file"
+    parameters:
+      path:
+        type: string
+        default: "~/randomfolder"
+    steps:
+      - run: echo "Log file" > <<parameters.path>>/log.txt
+  endmission:
+    description: "Use the parameters of this command to exit this mission with a green build."
+    parameters:
+      exitCode:
+        type: integer
+        default: 1
+    steps:
+      - run: exit <<parameters.exitCode>>
+
+jobs:
+  build:
+    executor: custom-node
+    steps:
+      - run: echo "console.log('complete')" | node
+      - generatelogs:
+          path: "~/project"
+      - run:
+          name: Check for logs - DO NOT MODIFY
+          command: |
+            if [ ! -f ~/project/log.txt ]; then
+              echo "The log should exist at ~/project/log.txt after running the 'generatelogs' command"
+              exit 1
+            fi
+      - endmission:
+          exitCode: 0
 
 workflows:
-  build-docker-workflow:
+  build-workflow:
     jobs:
-      - build-docker
-  build-linux-workflow:
-    jobs:
-      - build-linux
-  build-macos-workflow:
-    jobs:
-      - build-macos
-  build-windows-workflow:
-    jobs:
-      - build-windows
+      - build
