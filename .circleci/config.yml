@@ -1,31 +1,40 @@
 version: 2.1
 
-parameters:
-  run_by_api:
-    type: boolean
-    default: false
+orbs:
+  win: circleci/windows@4.1.1
 
 jobs:
-  regular:
+  build-docker:
     docker:
-      - image: cimg/base:2022.10
+      - image: cimg/node:18.11.0
     steps:
-      - checkout
-      - run: echo "I was run normally"
+      - run: echo "docker executor"
+  build-linux:
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - run: echo "linux executor"
+  build-macos:
+    macos:
+      xcode: 14.2.0
+    steps:
+      - run: echo "macos executor"
+  build-windows:
+    executor: win/server-2022
+    steps:
+      - run: echo "windows executor"
 
-  api-job:
-    docker:
-      - image: cimg/base:2022.10
-    steps:
-      - checkout
-      - run: echo "I was run by API"
 
 workflows:
-  normal:
+  build-docker-workflow:
     jobs:
-      - regular
-
-  api-workflow:
-    when: << pipeline.parameters.run_by_api >> # Without modifying the config, run api-job
+      - build-docker
+  build-linux-workflow:
     jobs:
-      - api-job
+      - build-linux
+  build-macos-workflow:
+    jobs:
+      - build-macos
+  build-windows-workflow:
+    jobs:
+      - build-windows
